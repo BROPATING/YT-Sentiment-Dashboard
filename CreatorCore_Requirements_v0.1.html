@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CreatorCore — Software Requirements Specification v0.1 (Draft)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:        #F6F2EA;
+    --paper:     #FBF8F1;
+    --ink:       #14110D;
+    --ink-soft:  #3D362C;
+    --rule:      #C9BFAE;
+    --rule-soft: #E2D9C7;
+    --accent:    #B33A20;        /* deep rust */
+    --accent-2:  #1F3D2B;        /* forest green */
+    --p0:        #B33A20;
+    --p1:        #8A6F1A;
+    --p2:        #4A4536;
+    --code-bg:   #ECE5D5;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .page{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 64px 56px 120px;
+    background: var(--paper);
+    box-shadow: 0 0 0 1px rgba(20,17,13,.04), 0 30px 80px -40px rgba(20,17,13,.18);
+    border-left: 1px solid var(--rule-soft);
+    border-right: 1px solid var(--rule-soft);
+  }
+
+  /* ---------- Header ---------- */
+  header.doc-head{
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 36px;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .eyebrow{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1.doc-title{
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+    font-variation-settings: "opsz" 144;
+  }
+  h1.doc-title em{
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .subtitle{
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 0 36px;
+    line-height: 1.4;
+  }
+  .meta-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px 32px;
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 24px;
+  }
+  .meta-grid div{
+    font-size: 13px;
+  }
+  .meta-grid .label{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .meta-grid .value{
+    font-weight: 500;
+  }
+  .status-pill{
+    display: inline-block;
+    background: var(--accent);
+    color: var(--paper);
+    padding: 2px 10px;
+    border-radius: 2px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ---------- Section structure ---------- */
+  section{
+    margin-top: 64px;
+    scroll-margin-top: 24px;
+  }
+  .section-num{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  h2{
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 36px;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0 0 20px;
+    font-variation-settings: "opsz" 96;
+  }
+  h3{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 36px 0 12px;
+    letter-spacing: -0.01em;
+  }
+  h4{
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin: 28px 0 10px;
+  }
+
+  p{margin: 0 0 14px;}
+  p.lede{
+    font-family: "Fraunces", serif;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 62ch;
+  }
+
+  ul, ol{
+    margin: 0 0 18px;
+    padding-left: 22px;
+  }
+  ul li, ol li{
+    margin-bottom: 6px;
+  }
+
+  code, .mono{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  /* ---------- TOC ---------- */
+  .toc{
+    background: transparent;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0;
+    margin-bottom: 56px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 32px;
+  }
+  .toc-title{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .toc ol{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    columns: 2;
+    column-gap: 40px;
+  }
+  .toc ol li{
+    margin-bottom: 7px;
+    break-inside: avoid;
+    font-size: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+  }
+  .toc a{
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .toc a:hover{
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .toc-num{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 22px;
+  }
+
+  /* ---------- Tables ---------- */
+  .req-table{
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0 28px;
+    font-size: 13.5px;
+  }
+  .req-table th{
+    text-align: left;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ink);
+    background: transparent;
+  }
+  .req-table td{
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .req-table tr:last-child td{ border-bottom: 1px solid var(--rule); }
+  .req-table .id-cell{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--ink-soft);
+  }
+  .req-table .module-cell{
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .req-table .pri{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    width: 40px;
+    letter-spacing: 0.05em;
+  }
+  .pri.p0{ color: var(--p0); }
+  .pri.p1{ color: var(--p1); }
+  .pri.p2{ color: var(--p2); }
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-left: 3px solid var(--accent);
+    padding: 16px 0 16px 22px;
+    margin: 24px 0;
+    background: transparent;
+  }
+  .callout .tag{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .callout p:last-child{ margin-bottom: 0; }
+
+  .callout.note{ border-left-color: var(--accent-2); }
+  .callout.note .tag{ color: var(--accent-2); }
+
+  /* ---------- Persona cards ---------- */
+  .persona-grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin: 24px 0;
+  }
+  .persona{
+    border: 1px solid var(--rule);
+    padding: 22px;
+    background: var(--paper);
+    position: relative;
+  }
+  .persona .role{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .persona h4{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 20px;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+  .persona p{ font-size: 13.5px; margin: 0 0 8px; line-height: 1.55; }
+  .persona .needs{
+    font-size: 12px;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--rule);
+    padding-top: 10px;
+    margin-top: 12px;
+  }
+
+  /* ---------- User stories ---------- */
+  .story{
+    border-left: 2px solid var(--rule);
+    padding: 8px 0 8px 18px;
+    margin: 14px 0;
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .story strong{
+    font-style: normal;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .story::before{
+    content: "“";
+    font-family: "Fraunces", serif;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 0;
+    margin-right: 4px;
+    vertical-align: -8px;
+  }
+
+  /* ---------- Roadmap ---------- */
+  .roadmap{
+    display: grid;
+    grid-template-columns: 100px 140px 1fr;
+    column-gap: 24px;
+    row-gap: 0;
+    margin: 24px 0;
+  }
+  .roadmap > div{
+    padding: 18px 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .roadmap > div:first-child,
+  .roadmap > div:nth-child(2),
+  .roadmap > div:nth-child(3){
+    border-top: 1px solid var(--ink);
+  }
+  .roadmap .phase{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .roadmap .duration{
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .roadmap .deliverable strong{
+    display: block;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .roadmap .deliverable span{
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* ---------- Open questions ---------- */
+  .questions{
+    counter-reset: q;
+    list-style: none;
+    padding: 0;
+  }
+  .questions li{
+    counter-increment: q;
+    border-top: 1px solid var(--rule-soft);
+    padding: 14px 0 14px 50px;
+    position: relative;
+    font-size: 14.5px;
+  }
+  .questions li:last-child{ border-bottom: 1px solid var(--rule-soft); }
+  .questions li::before{
+    content: "Q" counter(q, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  /* ---------- Sign-off ---------- */
+  .signoff{
+    margin-top: 80px;
+    border-top: 1px solid var(--ink);
+    padding-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .signoff .sig{
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    height: 60px;
+  }
+  .signoff .role-label{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    display: block;
+  }
+
+  /* ---------- Footer ---------- */
+  footer.doc-foot{
+    margin-top: 80px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px){
+    .page{ padding: 36px 22px 80px; }
+    .meta-grid{ grid-template-columns: repeat(2,1fr); }
+    .toc{ grid-template-columns: 1fr; }
+    .toc ol{ columns: 1; }
+    .persona-grid{ grid-template-columns: 1fr; }
+    .roadmap{ grid-template-columns: 1fr; row-gap: 4px; }
+    .roadmap > div{ padding: 6px 0; border-top: none; }
+    .roadmap .phase, .roadmap .duration{ padding-top: 14px; border-top: 1px solid var(--rule-soft); }
+    .signoff{ grid-template-columns: 1fr; }
+    h2{ font-size: 28px; }
+    .req-table{ font-size: 12.5px; }
+    .req-table td{ padding: 10px 8px; }
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    body{ background: white; }
+    .page{ box-shadow: none; border: none; max-width: none; padding: 24px; }
+    section{ page-break-inside: avoid; }
+    a{ color: var(--ink); text-decoration: none; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- ============ HEADER ============ -->
+  <header class="doc-head">
+    <div class="eyebrow">Software Requirements Specification — Draft</div>
+    <h1 class="doc-title">CreatorCore<em>:</em> a quieter inbox<br/>for noisy creators.</h1>
+    <p class="subtitle">An AI-assisted YouTube engagement &amp; sentiment platform that turns thousands of comments into a few decisions a creator actually wants to make.</p>
+
+    <div class="meta-grid">
+      <div>
+        <span class="label">Document</span>
+        <span class="value">SRS v0.1</span>
+      </div>
+      <div>
+        <span class="label">Status</span>
+        <span class="status-pill">DRAFT — FOR REVIEW</span>
+      </div>
+      <div>
+        <span class="label">Last Updated</span>
+        <span class="value">28 April 2026</span>
+      </div>
+      <div>
+        <span class="label">Owner</span>
+        <span class="value">Product / Engineering Lead</span>
+      </div>
+      <div>
+        <span class="label">Audience</span>
+        <span class="value">Engineering, Design, Founders</span>
+      </div>
+      <div>
+        <span class="label">Next Step</span>
+        <span class="value">Architecture spike (after sign-off)</span>
+      </div>
+      <div>
+        <span class="label">Review By</span>
+        <span class="value">All team members</span>
+      </div>
+      <div>
+        <span class="label">Sign-off Target</span>
+        <span class="value">Within 7 working days</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ TOC ============ -->
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><span class="toc-num">01</span><a href="#s1">Document Purpose</a></li>
+      <li><span class="toc-num">02</span><a href="#s2">Vision &amp; Goals</a></li>
+      <li><span class="toc-num">03</span><a href="#s3">Stakeholders &amp; Personas</a></li>
+      <li><span class="toc-num">04</span><a href="#s4">Functional Requirements</a></li>
+      <li><span class="toc-num">05</span><a href="#s5">Non-Functional Requirements</a></li>
+      <li><span class="toc-num">06</span><a href="#s6">External Interfaces</a></li>
+      <li><span class="toc-num">07</span><a href="#s7">Data Requirements</a></li>
+      <li><span class="toc-num">08</span><a href="#s8">Constraints &amp; Assumptions</a></li>
+      <li><span class="toc-num">09</span><a href="#s9">Key User Stories</a></li>
+      <li><span class="toc-num">10</span><a href="#s10">MVP Acceptance Criteria</a></li>
+      <li><span class="toc-num">11</span><a href="#s11">Risks &amp; Mitigations</a></li>
+      <li><span class="toc-num">12</span><a href="#s12">Phased Roadmap</a></li>
+      <li><span class="toc-num">13</span><a href="#s13">Open Questions</a></li>
+      <li><span class="toc-num">14</span><a href="#s14">Glossary</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ S1 ============ -->
+  <section id="s1">
+    <span class="section-num">§ 01</span>
+    <h2>Document purpose</h2>
+    <p class="lede">This document specifies <em>what</em> CreatorCore must do, for whom, and under what constraints. It deliberately stops short of <em>how</em> — architecture, framework choices, and detailed schemas come next.</p>
+
+    <p>The SRS exists to:</p>
+    <ul>
+      <li>Give every team member a shared, unambiguous picture of scope before code is written.</li>
+      <li>Surface disagreements early — when they cost a meeting, not a sprint.</li>
+      <li>Anchor downstream artefacts: architecture diagrams, API contracts, test plans, sales collateral.</li>
+      <li>Serve as the contract by which we judge "is the MVP done."</li>
+    </ul>
+
+    <div class="callout">
+      <span class="tag">How to read this</span>
+      <p>Skim the TOC. Read §02 (Vision) and §04 (Functional Requirements) closely. Treat §13 (Open Questions) as your homework: leave a comment on each one before our next sync.</p>
+    </div>
+  </section>
+
+  <!-- ============ S2 ============ -->
+  <section id="s2">
+    <span class="section-num">§ 02</span>
+    <h2>Vision &amp; goals</h2>
+
+    <h3>Problem</h3>
+    <p>YouTube creators above ~25K subscribers receive more comments than they can read, let alone respond to. They lose touch with their audience, miss serious issues (toxicity, spam, brand-unsafe threads), and spend disproportionate time on low-value engagement.</p>
+
+    <h3>Vision</h3>
+    <p class="lede">CreatorCore reads the comments so the creator doesn't have to — and tells them, in plain language, what's worth doing about it.</p>
+
+    <h3>Primary goals (12 months)</h3>
+    <ol>
+      <li><strong>Reduce comment-handling time</strong> for an active creator by ≥ 60% versus YouTube Studio alone.</li>
+      <li><strong>Surface 100% of high-toxicity threads</strong> within 30 minutes of appearance.</li>
+      <li><strong>Generate weekly "Vibe Summaries"</strong> that creators rate ≥ 4 / 5 for usefulness.</li>
+      <li><strong>Onboard 50 paying creators</strong> within 6 months of public beta.</li>
+    </ol>
+
+    <h3>Non-goals (explicit)</h3>
+    <ul>
+      <li>This is <em>not</em> a video-SEO tool (vidIQ / TubeBuddy already own that space).</li>
+      <li>This is <em>not</em> a content-scheduling or thumbnail-A/B tool.</li>
+      <li>We do <em>not</em> support TikTok, Instagram, or X in v1. Focus is the moat.</li>
+    </ul>
+  </section>
+
+  <!-- ============ S3 ============ -->
+  <section id="s3">
+    <span class="section-num">§ 03</span>
+    <h2>Stakeholders &amp; personas</h2>
+    <p class="lede">Three people pay for, use, or are affected by this product. Designing for the wrong one is the most common way SaaS dies.</p>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="role">Primary user</div>
+        <h4>The Solo Creator</h4>
+        <p>30K–500K subs. Edits their own videos. Posts 1–2 times a week. Currently tries to read every comment and feels guilty when they can't.</p>
+        <div class="needs"><strong>Needs:</strong> a 5-minute weekly view of "what my audience thinks of me," fast triage, no fluff, mobile-friendly.</div>
+      </div>
+      <div class="persona">
+        <div class="role">Power user</div>
+        <h4>The Creator's Manager</h4>
+        <p>Manages comments, brand deals, and community for 1–4 mid-tier creators. Lives in spreadsheets. Will be the loudest advocate or churn risk.</p>
+        <div class="needs"><strong>Needs:</strong> multi-channel view, bulk actions, exportable reports for client meetings.</div>
+      </div>
+      <div class="persona">
+        <div class="role">Influencer</div>
+        <h4>The Brand / Sponsor</h4>
+        <p>Considers paying a creator for sponsored content. Cares whether the creator's audience is real, positive, and on-brand.</p>
+        <div class="needs"><strong>Needs (v2+):</strong> shareable "audience health" report the creator can send to land deals.</div>
+      </div>
+      <div class="persona">
+        <div class="role">Internal</div>
+        <h4>CreatorCore Admin</h4>
+        <p>Our own team — support, ops, finance.</p>
+        <div class="needs"><strong>Needs:</strong> ability to inspect a tenant for support, monitor API quota usage, manage billing.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S4 ============ -->
+  <section id="s4">
+    <span class="section-num">§ 04</span>
+    <h2>Functional requirements</h2>
+    <p class="lede">Each requirement has a stable ID. Use these IDs in commits, PRs, tickets, and tests. Priority is read as <span class="mono">P0</span> = MVP-blocker, <span class="mono">P1</span> = needed before public launch, <span class="mono">P2</span> = post-launch.</p>
+
+    <h3>4.1 Authentication &amp; channel connection</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th style="width:78px">ID</th><th style="width:120px">Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-001</td><td class="module-cell">Auth</td><td>A user shall be able to create an account using email + password, with email verification.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-002</td><td class="module-cell">Auth</td><td>A user shall be able to sign in with Google (Sign-In with Google).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-003</td><td class="module-cell">YT OAuth</td><td>A user shall authorize CreatorCore to access their YouTube channel via OAuth 2.0 with the minimum scopes required: <span class="mono">youtube.readonly</span>, <span class="mono">youtube.force-ssl</span> (only if reply-posting is enabled).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-004</td><td class="module-cell">YT OAuth</td><td>A user shall connect more than one YouTube channel to a single CreatorCore account (Manager persona).</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-005</td><td class="module-cell">YT OAuth</td><td>A user shall be able to disconnect / revoke a channel; CreatorCore shall purge cached comment data within 30 days of revocation.</td><td class="pri p0">P0</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 Comment ingestion</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-010</td><td class="module-cell">Ingest</td><td>The system shall fetch new comments from connected channels via the YouTube Data API v3 on a configurable polling interval (default 15 minutes).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-011</td><td class="module-cell">Ingest</td><td>On first connection, the system shall backfill comments from up to the most recent 25 videos, capped to stay within daily quota.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-012</td><td class="module-cell">Ingest</td><td>The system shall deduplicate comments by YouTube comment ID across polls.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-013</td><td class="module-cell">Ingest</td><td>The system shall capture and store: comment ID, parent ID (for replies), author display name, author channel ID, text, timestamp, like count, language hint.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-014</td><td class="module-cell">Ingest</td><td>The system shall detect when a comment has been edited or deleted on YouTube and update local state on next poll.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-015</td><td class="module-cell">Ingest</td><td>The system shall prioritise polling for videos uploaded in the last 72 hours (where most comments arrive).</td><td class="pri p1">P1</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.3 Sentiment, toxicity &amp; classification</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-020</td><td class="module-cell">NLP</td><td>Each comment shall be classified into a sentiment bucket: <span class="mono">positive</span>, <span class="mono">negative</span>, <span class="mono">neutral</span>, <span class="mono">inquiry</span>.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-021</td><td class="module-cell">NLP</td><td>Each comment shall additionally receive a toxicity score on a 0.00–1.00 scale, independent of sentiment.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-022</td><td class="module-cell">NLP</td><td>The system shall detect comment language with at least the following supported: English, Hindi, Hinglish (Roman-script Hindi).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-023</td><td class="module-cell">NLP</td><td>The system shall flag suspected spam (e.g. repeated emojis, link spam, bot patterns) as a separate label.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-024</td><td class="module-cell">NLP</td><td>The creator shall be able to override the AI classification of any comment; overrides shall be used to fine-tune future classifications.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-025</td><td class="module-cell">NLP</td><td>Sentiment accuracy shall be validated against a labelled evaluation set (≥ 1,000 comments) before public launch.</td><td class="pri p0">P0</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.4 Reply assistance</h3>
+    <div class="callout">
+      <span class="tag">Policy note</span>
+      <p>YouTube's API Services Developer Policies restrict purely automated comment posting. CreatorCore therefore implements a <strong>"draft-and-approve"</strong> model: the AI proposes replies, the creator confirms with one tap. Fully autonomous posting is explicitly out of scope until legal review clears it.</p>
+    </div>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-030</td><td class="module-cell">Reply</td><td>The system shall identify "low-intent" comments (e.g. "Hi", "First", "Great video") suitable for templated short replies.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-031</td><td class="module-cell">Reply</td><td>The creator shall define reply templates with variable slots (e.g. <span class="mono">{author_name}</span>).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-032</td><td class="module-cell">Reply</td><td>The system shall present drafted replies to the creator for explicit approval before posting to YouTube.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-033</td><td class="module-cell">Reply</td><td>An "AI Persona" shall be trainable on a creator's last N approved replies, biasing future drafts toward their voice.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-034</td><td class="module-cell">Reply</td><td>Reply-posting shall be rate-limited per channel to stay well below YouTube's spam-detection thresholds.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-035</td><td class="module-cell">Reply</td><td>The system shall log every posted reply with a creator-attributable approval record (audit trail).</td><td class="pri p0">P0</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.5 Dashboard &amp; analytics</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-040</td><td class="module-cell">Dashboard</td><td>The dashboard shall display a sentiment-over-time chart (positive / negative / neutral as stacked area).</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-041</td><td class="module-cell">Dashboard</td><td>The dashboard shall display per-video sentiment breakdowns, sortable by recency, view count, and toxicity.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-042</td><td class="module-cell">Dashboard</td><td>The dashboard shall surface top 10 most-positive and top 10 most-negative comments per period.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-043</td><td class="module-cell">Dashboard</td><td>The user shall filter all views by date range, video, sentiment label, language, and toxicity threshold.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-044</td><td class="module-cell">Action Center</td><td>The user shall bulk-hide, bulk-mark-as-spam, or bulk-flag-for-review comments matching a filter.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-045</td><td class="module-cell">Dashboard</td><td>All views shall be functional on a mobile viewport (≥ 360px wide).</td><td class="pri p1">P1</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.6 Insight features (the differentiators)</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-050</td><td class="module-cell">Alerts</td><td>The system shall send a Toxicity Alert (in-app + email) when toxicity in a video's comment thread exceeds a configurable threshold within a rolling 1-hour window.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-051</td><td class="module-cell">Vibe Summary</td><td>The system shall generate a 3–5 sentence LLM summary of the creator's last week of comments, surfacing themes, complaints, and praise.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-052</td><td class="module-cell">Vibe Summary</td><td>The Vibe Summary shall cite up to 5 representative comments per theme, linking back to the source.</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-053</td><td class="module-cell">ROI</td><td>If a creator provides affiliate-link metadata, the system shall correlate sentiment cohorts with click-through behaviour.</td><td class="pri p2">P2</td></tr>
+        <tr><td class="id-cell">FR-054</td><td class="module-cell">Brand Report</td><td>The creator shall export a shareable PDF "audience health" report for use in sponsorship pitches.</td><td class="pri p2">P2</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.7 Account &amp; billing</h3>
+    <table class="req-table">
+      <thead>
+        <tr><th>ID</th><th>Module</th><th>Requirement</th><th class="pri">Pri</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">FR-060</td><td class="module-cell">Settings</td><td>The user shall configure notification preferences (in-app, email, frequency).</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-061</td><td class="module-cell">Billing</td><td>The system shall support tiered subscriptions (Free / Creator / Manager) with monthly billing via a payment processor (e.g. Razorpay for India, Stripe for international).</td><td class="pri p1">P1</td></tr>
+        <tr><td class="id-cell">FR-062</td><td class="module-cell">Admin</td><td>An internal admin console shall display per-tenant API quota consumption and error rates.</td><td class="pri p0">P0</td></tr>
+        <tr><td class="id-cell">FR-063</td><td class="module-cell">Audit</td><td>All sensitive actions (channel connect, reply post, data export, account delete) shall be logged with actor, timestamp, IP.</td><td class="pri p0">P0</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ S5 ============ -->
+  <section id="s5">
+    <span class="section-num">§ 05</span>
+    <h2>Non-functional requirements</h2>
+
+    <table class="req-table">
+      <thead>
+        <tr><th style="width:78px">ID</th><th style="width:140px">Category</th><th>Requirement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id-cell">NFR-001</td><td class="module-cell">Performance</td><td>Dashboard primary views shall render in under 2.0 seconds at the p95 percentile, on a mid-tier mobile network (Fast 3G).</td></tr>
+        <tr><td class="id-cell">NFR-002</td><td class="module-cell">Throughput</td><td>The NLP pipeline shall classify ≥ 1,000 comments per minute per worker.</td></tr>
+        <tr><td class="id-cell">NFR-003</td><td class="module-cell">Availability</td><td>Target uptime: 99.5% during MVP, 99.9% by 6 months post-launch.</td></tr>
+        <tr><td class="id-cell">NFR-004</td><td class="module-cell">Security</td><td>OAuth refresh tokens shall be encrypted at rest using AES-256; encryption keys managed by a dedicated KMS.</td></tr>
+        <tr><td class="id-cell">NFR-005</td><td class="module-cell">Security</td><td>All client-server traffic shall use TLS 1.2 or higher.</td></tr>
+        <tr><td class="id-cell">NFR-006</td><td class="module-cell">Compliance</td><td>The product shall remain in compliance with the YouTube API Services Developer Policies at all times. A quarterly review is mandatory.</td></tr>
+        <tr><td class="id-cell">NFR-007</td><td class="module-cell">Compliance</td><td>The product shall comply with India's DPDP Act 2023 and, for international users, GDPR (right to access, right to erasure, data portability).</td></tr>
+        <tr><td class="id-cell">NFR-008</td><td class="module-cell">Quality</td><td>Sentiment classifier shall reach ≥ 80% F1 on English and ≥ 70% F1 on Hindi/Hinglish on the internal evaluation set before launch.</td></tr>
+        <tr><td class="id-cell">NFR-009</td><td class="module-cell">Cost</td><td>Per-channel daily YouTube API quota usage shall stay under 80% of the allocated limit during normal operation.</td></tr>
+        <tr><td class="id-cell">NFR-010</td><td class="module-cell">Accessibility</td><td>Dashboard shall meet WCAG 2.1 Level AA.</td></tr>
+        <tr><td class="id-cell">NFR-011</td><td class="module-cell">Observability</td><td>All services shall emit structured logs and key business metrics (comments ingested, replies drafted, alerts fired) to a central observability stack.</td></tr>
+        <tr><td class="id-cell">NFR-012</td><td class="module-cell">Internationalisation</td><td>The dashboard UI shall be string-externalised to allow future translation (English-only at launch).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ S6 ============ -->
+  <section id="s6">
+    <span class="section-num">§ 06</span>
+    <h2>External interfaces</h2>
+
+    <h3>YouTube Data API v3</h3>
+    <p>Primary integration. Read access for videos, comments, and channel statistics. Write access for posting replies (only with explicit creator approval). The team must apply for a quota extension before public launch — default 10,000 units/day will not scale.</p>
+
+    <h3>LLM provider (Vibe Summary &amp; Persona)</h3>
+    <p>One of: Anthropic Claude, OpenAI GPT, or Google Gemini. Cost and rate limits will determine choice; abstract the call behind a provider-agnostic interface from day one.</p>
+
+    <h3>Payment processor</h3>
+    <p>Razorpay for India-domiciled creators; Stripe for international. Webhook-driven subscription state.</p>
+
+    <h3>Email / notification provider</h3>
+    <p>Transactional email for verification, alerts, weekly summary. Candidates: Resend, AWS SES, SendGrid.</p>
+
+    <h3>Authentication providers</h3>
+    <p>Google Sign-In (primary). Email + password (fallback). No social-login fragmentation in v1.</p>
+  </section>
+
+  <!-- ============ S7 ============ -->
+  <section id="s7">
+    <span class="section-num">§ 07</span>
+    <h2>Data requirements</h2>
+    <p class="lede">High-level data shapes only — full schema lives in the architecture document.</p>
+
+    <ul>
+      <li><strong>User</strong> — account credentials, preferences, billing tier.</li>
+      <li><strong>Channel</strong> — YouTube channel ID, OAuth refresh token (encrypted), connection status, owner user ID.</li>
+      <li><strong>Video</strong> — YouTube video ID, channel ID, title snapshot, published date.</li>
+      <li><strong>Comment</strong> — YouTube comment ID, video ID, author, text, timestamp, parent ID. Foreign-keyed to a derived <em>Classification</em> record.</li>
+      <li><strong>Classification</strong> — sentiment label, toxicity score, language, spam flag, model version, override flag.</li>
+      <li><strong>ReplyDraft</strong> — comment ID, draft text, persona version, status (<span class="mono">pending / approved / posted / discarded</span>), approver user ID.</li>
+      <li><strong>VibeSummary</strong> — channel ID, period, generated text, source comment IDs, model + cost metadata.</li>
+      <li><strong>AuditLog</strong> — actor, action, target, timestamp, IP, user agent.</li>
+    </ul>
+
+    <h4>Retention</h4>
+    <p>Raw comment text retained for the lifetime of the account. On account deletion or channel disconnect, all derived data shall be purged within 30 days, except aggregated, fully anonymous statistics used for product improvement.</p>
+  </section>
+
+  <!-- ============ S8 ============ -->
+  <section id="s8">
+    <span class="section-num">§ 08</span>
+    <h2>Constraints &amp; assumptions</h2>
+
+    <h3>Hard constraints</h3>
+    <ul>
+      <li><strong>YouTube quota</strong> — fundamental ceiling on ingestion rate.</li>
+      <li><strong>YouTube ToS</strong> — defines what we can and cannot automate (see callout in §4.4).</li>
+      <li><strong>LLM unit economics</strong> — Vibe Summary cost must stay below 15% of subscription revenue per active channel.</li>
+      <li><strong>Single-region launch</strong> — initial deployment in Asia-South (Mumbai region) for proximity to early users.</li>
+    </ul>
+
+    <h3>Assumptions to validate</h3>
+    <ul>
+      <li>Creators will pay ≥ ₹999 / $14 per month for this category of tool.</li>
+      <li>Creators trust an external app to post replies on their behalf <em>once approval is in the loop</em>.</li>
+      <li>Hinglish sentiment is solvable to ≥ 70% F1 with available models + a few thousand labelled examples.</li>
+      <li>Polling at 15-minute intervals is fast enough for the toxicity-alert use case.</li>
+    </ul>
+  </section>
+
+  <!-- ============ S9 ============ -->
+  <section id="s9">
+    <span class="section-num">§ 09</span>
+    <h2>Key user stories</h2>
+
+    <p class="story"><strong>As a solo creator,</strong> on Monday morning, I want to read a 5-sentence summary of last week's comments so I can decide what to fix in next week's video — without scrolling for an hour.</p>
+
+    <p class="story"><strong>As a creator,</strong> when a video is going viral, I want to be alerted within 30 minutes if the comment section turns hostile, so I can step in before it shapes the narrative.</p>
+
+    <p class="story"><strong>As a creator,</strong> I want a one-tap "post these 40 friendly replies" button so my new viewers feel acknowledged, while I retain final say.</p>
+
+    <p class="story"><strong>As a manager,</strong> I want to see all my four creators on one screen, sorted by which channel needs my attention today.</p>
+
+    <p class="story"><strong>As a creator pitching a sponsor,</strong> I want a clean, exportable report showing my audience is engaged and on-brand, so my sponsorship rates speak for themselves.</p>
+  </section>
+
+  <!-- ============ S10 ============ -->
+  <section id="s10">
+    <span class="section-num">§ 10</span>
+    <h2>MVP acceptance criteria</h2>
+    <p class="lede">The MVP is "done" when, and only when, every item below is true. We will not ship sooner. We will not slip past these without an explicit decision.</p>
+    <ol>
+      <li>One creator can connect a single channel via OAuth and see their last 25 videos' comments ingested within 30 minutes.</li>
+      <li>Each ingested comment receives sentiment + toxicity classification visible in the dashboard.</li>
+      <li>The dashboard renders sentiment-over-time, per-video breakdown, and top positive/negative comments.</li>
+      <li>A toxicity alert fires within 30 minutes of a configured threshold breach.</li>
+      <li>A weekly Vibe Summary is generated automatically and emailed to the creator.</li>
+      <li>Reply drafts are produced for low-intent comments and require explicit one-tap approval before posting.</li>
+      <li>OAuth tokens are encrypted at rest. A creator can disconnect and have data purged within 30 days.</li>
+      <li>The internal sentiment evaluation set shows ≥ 80% F1 (English) / ≥ 70% F1 (Hindi+Hinglish).</li>
+      <li>Five real creators (recruited during Phase 0 discovery) have used the product for two consecutive weeks and rated the Vibe Summary ≥ 4 / 5 for usefulness.</li>
+    </ol>
+  </section>
+
+  <!-- ============ S11 ============ -->
+  <section id="s11">
+    <span class="section-num">§ 11</span>
+    <h2>Risks &amp; mitigations</h2>
+    <table class="req-table">
+      <thead>
+        <tr><th style="width:30%">Risk</th><th style="width:14%">Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>YouTube ToS interpretation forbids our reply-assist feature.</td><td>High</td><td>Draft-and-approve model from day one. Engage YouTube partner support pre-launch. Build the product so it works as a "comment intelligence" tool even without reply features.</td></tr>
+        <tr><td>API quota exhaustion at scale.</td><td>High</td><td>Apply for quota extension early. Aggressive Redis caching. Per-tenant polling-frequency throttling tied to subscription tier.</td></tr>
+        <tr><td>Sentiment accuracy on Hinglish is too low.</td><td>Medium</td><td>Build labelled evaluation set in Phase 0. Fine-tune a multilingual model. Offer creator-side override loop (FR-024) so accuracy improves with usage.</td></tr>
+        <tr><td>LLM costs eat margins.</td><td>Medium</td><td>Use cheaper models (e.g. Haiku-class) for bulk ops; reserve premium models for Vibe Summary. Cap per-tenant LLM spend.</td></tr>
+        <tr><td>Competitive squeeze (vidIQ, TubeBuddy add similar feature).</td><td>Medium</td><td>Lead with Vibe Summary and Indian-language depth — neither competitor invests there today.</td></tr>
+        <tr><td>OAuth token leakage.</td><td>Critical</td><td>KMS-managed encryption, scoped IAM roles, security audit before public launch.</td></tr>
+        <tr><td>Cold-start: first user has no historical data, dashboard looks empty.</td><td>Low</td><td>Backfill last 25 videos on connect (FR-011). Show "while we ingest, here's what to expect" loading state.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ S12 ============ -->
+  <section id="s12">
+    <span class="section-num">§ 12</span>
+    <h2>Phased roadmap</h2>
+    <p class="lede">A roadmap built backwards from "what do we have to learn next?" rather than "what's easy to build next?"</p>
+
+    <div class="roadmap">
+      <div class="phase">PHASE 0</div>
+      <div class="duration">2 weeks</div>
+      <div class="deliverable"><strong>Discovery &amp; validation</strong><span>Interview 8–10 creators. Write 1-page problem brief per persona. Build labelled-comment evaluation set. <em>Exit gate:</em> we know what to build and have proof someone wants it.</span></div>
+
+      <div class="phase">PHASE 1</div>
+      <div class="duration">4 weeks</div>
+      <div class="deliverable"><strong>Ingestion + NLP spike (no UI)</strong><span>Python service that, given a channel ID, fetches comments and classifies them. Outputs to a database. <em>Exit gate:</em> sentiment hits target accuracy on the eval set.</span></div>
+
+      <div class="phase">PHASE 2</div>
+      <div class="duration">4 weeks</div>
+      <div class="deliverable"><strong>Read-only Angular dashboard</strong><span>Sentiment over time, per-video breakdown, top comments. Single-tenant, no auth. <em>Exit gate:</em> founders + 2 friendly creators can use it daily.</span></div>
+
+      <div class="phase">PHASE 3</div>
+      <div class="duration">3 weeks</div>
+      <div class="deliverable"><strong>OAuth, multi-tenancy, billing skeleton</strong><span>Real users can sign up and connect their own channels. <em>Exit gate:</em> 5 external creators onboarded.</span></div>
+
+      <div class="phase">PHASE 4</div>
+      <div class="duration">4 weeks</div>
+      <div class="deliverable"><strong>Reply drafting + approval flow</strong><span>Low-intent reply drafting, persona training, audit trail. <em>Exit gate:</em> first creator-approved reply posted in production.</span></div>
+
+      <div class="phase">PHASE 5</div>
+      <div class="duration">3 weeks</div>
+      <div class="deliverable"><strong>Vibe Summary &amp; Toxicity Alerts</strong><span>The differentiators. Weekly digest, real-time alerts. <em>Exit gate:</em> creators rate Vibe Summary ≥ 4 / 5.</span></div>
+
+      <div class="phase">PHASE 6</div>
+      <div class="duration">4 weeks</div>
+      <div class="deliverable"><strong>Closed beta with 50 creators</strong><span>Hardening, observability, billing live. <em>Exit gate:</em> 50 creators active, &lt; 5% weekly churn, NPS ≥ 30.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ S13 ============ -->
+  <section id="s13">
+    <span class="section-num">§ 13</span>
+    <h2>Open questions</h2>
+    <p class="lede">Each team member: leave a written take on every question below, before the architecture meeting. No silent agreement.</p>
+    <ol class="questions">
+      <li>Self-hosted NLP model (HuggingFace, on our GPU) versus API-based (OpenAI moderation, Google Perspective)? Cost vs. control trade-off.</li>
+      <li>Which LLM provider for Vibe Summary at MVP — and what's our fallback if they raise prices or rate-limit us?</li>
+      <li>Pricing model: pure paid, freemium, or free during beta with no commitment? Each shapes feature scope.</li>
+      <li>Geographic launch market — India-only, or English-speaking creators globally? Affects language priority and payment processor.</li>
+      <li>Do we need to apply for YouTube API audit / partner verification (required above ~100 users on certain scopes)? Timeline impact.</li>
+      <li>Polling vs. PubSubHubbub for new-comment detection — what's the latency/cost trade-off in practice?</li>
+      <li>How do we handle a creator who uses CreatorCore for a channel they don't actually own (manager scenario)? Permissions model.</li>
+      <li>Should Vibe Summaries be exportable / shareable from day one, or is that a v2 feature?</li>
+      <li>Mobile-first or desktop-first? (Solo creators are mobile-heavy; managers are desktop-heavy.)</li>
+      <li>What's our policy when our AI gets it wrong and a creator's reputation is harmed by an approved-but-flawed reply?</li>
+    </ol>
+  </section>
+
+  <!-- ============ S14 ============ -->
+  <section id="s14">
+    <span class="section-num">§ 14</span>
+    <h2>Glossary</h2>
+    <ul>
+      <li><strong>Vibe Summary</strong> — LLM-generated 3–5 sentence digest of recent comment themes.</li>
+      <li><strong>Toxicity score</strong> — 0.00–1.00 measure of how hostile a comment is, independent of sentiment polarity.</li>
+      <li><strong>Low-intent comment</strong> — short, formulaic comment (e.g. "Hi", "First", emoji-only) suitable for templated reply.</li>
+      <li><strong>Persona</strong> — a creator's voice profile, learned from their approved replies, used to bias future drafts.</li>
+      <li><strong>Quota unit</strong> — YouTube Data API's billing unit; each API call costs 1+ units depending on operation.</li>
+      <li><strong>Tenant</strong> — a single CreatorCore customer account, isolating their data and preferences.</li>
+      <li><strong>Hinglish</strong> — Hindi written in Roman script, often code-mixed with English. Common in Indian YouTube comments.</li>
+      <li><strong>F1 score</strong> — harmonic mean of precision and recall; the standard quality metric for our sentiment classifier.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SIGN-OFF ============ -->
+  <div class="signoff">
+    <div>
+      <div class="sig"></div>
+      <span class="role-label">Product Lead</span>
+    </div>
+    <div>
+      <div class="sig"></div>
+      <span class="role-label">Engineering Lead</span>
+    </div>
+    <div>
+      <div class="sig"></div>
+      <span class="role-label">Design Lead</span>
+    </div>
+  </div>
+
+  <footer class="doc-foot">
+    <span>CreatorCore SRS v0.1 · Draft</span>
+    <span>Confidential — Internal Use</span>
+  </footer>
+
+</div>
+</body>
+</html>
