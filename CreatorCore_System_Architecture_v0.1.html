@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CreatorCore — System Architecture v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:        #0E0F12;
+    --paper:     #14161A;
+    --panel:     #1A1D22;
+    --ink:       #ECE7DD;
+    --ink-soft:  #9A968D;
+    --ink-faint: #5C5A55;
+    --rule:      #2A2D33;
+    --rule-soft: #1F2228;
+    --accent:    #E66A3D;        /* warm rust */
+    --accent-2:  #6FAE8E;        /* sage green */
+    --accent-3:  #D9B25A;        /* amber */
+    --accent-4:  #8B9DDB;        /* dusk blue */
+    --danger:    #C84F44;
+    --code-bg:   #0A0B0E;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .page{
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 64px 56px 120px;
+    background: var(--paper);
+    border-left: 1px solid var(--rule-soft);
+    border-right: 1px solid var(--rule-soft);
+    position: relative;
+  }
+  .page::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 3px 3px;
+    pointer-events: none;
+  }
+  .page > *{ position: relative; }
+
+  /* ---------- Header ---------- */
+  header.doc-head{
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 36px;
+    margin-bottom: 48px;
+  }
+  .eyebrow{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1.doc-title{
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: clamp(40px, 6vw, 68px);
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    margin: 0 0 18px;
+    font-variation-settings: "opsz" 144;
+  }
+  h1.doc-title em{
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .subtitle{
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0 0 36px;
+    line-height: 1.45;
+  }
+  .meta-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px 32px;
+    border-top: 1px solid var(--rule);
+    padding-top: 24px;
+  }
+  .meta-grid div{ font-size: 13px; }
+  .meta-grid .label{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .meta-grid .value{ font-weight: 500; }
+
+  /* ---------- Section structure ---------- */
+  section{ margin-top: 80px; scroll-margin-top: 24px; }
+  .section-num{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  h2{
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 40px;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 0 0 20px;
+    font-variation-settings: "opsz" 96;
+  }
+  h3{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.25;
+    margin: 40px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h4{
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin: 32px 0 12px;
+  }
+
+  p{ margin: 0 0 14px; color: var(--ink); }
+  p.lede{
+    font-family: "Fraunces", serif;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 64ch;
+  }
+
+  ul, ol{ margin: 0 0 18px; padding-left: 22px; }
+  ul li, ol li{ margin-bottom: 8px; }
+
+  code, .mono{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.86em;
+    background: var(--code-bg);
+    color: var(--accent-3);
+    padding: 1px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--rule-soft);
+  }
+
+  /* ---------- Diagram containers ---------- */
+  .diagram{
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 28px;
+    margin: 28px 0;
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  .diagram svg{ display: block; max-width: 100%; height: auto; }
+  .diagram .caption{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+  }
+  .diagram .caption .fig{ color: var(--accent); margin-right: 10px; }
+
+  /* ---------- Tables ---------- */
+  .arch-table{
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0 28px;
+    font-size: 13.5px;
+  }
+  .arch-table th{
+    text-align: left;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ink-soft);
+  }
+  .arch-table td{
+    padding: 14px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .arch-table tr:last-child td{ border-bottom: 1px solid var(--rule); }
+  .arch-table .first-cell{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent-3);
+    white-space: nowrap;
+  }
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-left: 3px solid var(--accent);
+    padding: 16px 0 16px 22px;
+    margin: 24px 0;
+    background: transparent;
+  }
+  .callout .tag{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .callout p:last-child{ margin-bottom: 0; }
+  .callout.green{ border-left-color: var(--accent-2); }
+  .callout.green .tag{ color: var(--accent-2); }
+  .callout.amber{ border-left-color: var(--accent-3); }
+  .callout.amber .tag{ color: var(--accent-3); }
+  .callout.danger{ border-left-color: var(--danger); }
+  .callout.danger .tag{ color: var(--danger); }
+
+  /* ---------- TOC ---------- */
+  .toc{
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0;
+    margin-bottom: 56px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+  }
+  .toc-title{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .toc ol{ list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 40px; }
+  .toc ol li{ margin-bottom: 8px; break-inside: avoid; font-size: 14px; display: flex; gap: 14px; align-items: baseline; }
+  .toc a{ color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s, color .15s; }
+  .toc a:hover{ color: var(--accent); border-color: var(--accent); }
+  .toc-num{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 22px;
+  }
+
+  /* ---------- Pillar cards ---------- */
+  .pillars{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .pillar{
+    border: 1px solid var(--rule);
+    padding: 24px;
+    background: var(--panel);
+    border-radius: 4px;
+  }
+  .pillar .num{
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.16em;
+    margin-bottom: 12px;
+  }
+  .pillar h4{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 19px;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+  .pillar p{ font-size: 13.5px; color: var(--ink-soft); margin: 0; line-height: 1.55; }
+
+  /* ---------- Code blocks ---------- */
+  pre{
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent-2);
+    padding: 18px 20px;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin: 18px 0 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  pre .k{ color: var(--accent); }      /* keyword */
+  pre .s{ color: var(--accent-2); }    /* string */
+  pre .c{ color: var(--ink-faint); font-style: italic; } /* comment */
+  pre .n{ color: var(--accent-4); }    /* name/identifier */
+  pre .y{ color: var(--accent-3); }    /* yaml key */
+
+  /* ---------- Footer ---------- */
+  footer.doc-foot{
+    margin-top: 80px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 800px){
+    .page{ padding: 36px 22px 80px; }
+    .meta-grid{ grid-template-columns: repeat(2,1fr); }
+    .toc{ grid-template-columns: 1fr; }
+    .toc ol{ columns: 1; }
+    .pillars{ grid-template-columns: 1fr; }
+    h2{ font-size: 30px; }
+    .diagram{ padding: 16px; }
+  }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <!-- ============ HEADER ============ -->
+  <header class="doc-head">
+    <div class="eyebrow">System Architecture · Internal · Confidential</div>
+    <h1 class="doc-title">CreatorCore<em>:</em> the<br/>system, drawn.</h1>
+    <p class="subtitle">A production-grade architecture built for compliance, cost-control, and the day a creator's video goes viral at 2 a.m.</p>
+
+    <div class="meta-grid">
+      <div><span class="label">Document</span><span class="value">ARCH v0.1</span></div>
+      <div><span class="label">Pairs With</span><span class="value">SRS v0.1</span></div>
+      <div><span class="label">Last Updated</span><span class="value">28 April 2026</span></div>
+      <div><span class="label">Owner</span><span class="value">Engineering Lead</span></div>
+      <div><span class="label">Status</span><span class="value">Draft for Review</span></div>
+      <div><span class="label">Cloud</span><span class="value">GCP (primary) / AWS (fallback)</span></div>
+      <div><span class="label">Region</span><span class="value">asia-south1 (Mumbai)</span></div>
+      <div><span class="label">Audit-Ready</span><span class="value">YouTube API Compliance</span></div>
+    </div>
+  </header>
+
+  <!-- ============ TOC ============ -->
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><span class="toc-num">01</span><a href="#s1">Architectural Pillars</a></li>
+      <li><span class="toc-num">02</span><a href="#s2">High-Level System Diagram</a></li>
+      <li><span class="toc-num">03</span><a href="#s3">Service Catalogue</a></li>
+      <li><span class="toc-num">04</span><a href="#s4">Data Flow: Comment Lifecycle</a></li>
+      <li><span class="toc-num">05</span><a href="#s5">OAuth &amp; Identity</a></li>
+      <li><span class="toc-num">06</span><a href="#s6">The Intelligence Layer</a></li>
+      <li><span class="toc-num">07</span><a href="#s7">Data Stores &amp; Schema</a></li>
+      <li><span class="toc-num">08</span><a href="#s8">API Contract</a></li>
+      <li><span class="toc-num">09</span><a href="#s9">Security &amp; Compliance</a></li>
+      <li><span class="toc-num">10</span><a href="#s10">Quota &amp; Cost Engineering</a></li>
+      <li><span class="toc-num">11</span><a href="#s11">Deployment Topology</a></li>
+      <li><span class="toc-num">12</span><a href="#s12">Observability</a></li>
+      <li><span class="toc-num">13</span><a href="#s13">Scalability Plan</a></li>
+      <li><span class="toc-num">14</span><a href="#s14">Disaster Recovery</a></li>
+      <li><span class="toc-num">15</span><a href="#s15">Engineering Playbook</a></li>
+      <li><span class="toc-num">16</span><a href="#s16">Path to YouTube Partnership</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ S1 ============ -->
+  <section id="s1">
+    <span class="section-num">§ 01</span>
+    <h2>Architectural pillars</h2>
+    <p class="lede">Three principles that override every other engineering preference. When in doubt, return to these.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">PILLAR 01</div>
+        <h4>Decouple, always</h4>
+        <p>Ingestion, classification, dashboard, and reply-posting are independent services on a message bus. A failure in one does not cascade. A spike in one does not starve the others.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">PILLAR 02</div>
+        <h4>Compliance is not a feature</h4>
+        <p>OAuth scopes, data retention, audit logs, and human-in-the-loop approval are baked into the architecture, not added before launch. The YouTube API audit assumes them by default.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">PILLAR 03</div>
+        <h4>Cost is a first-class metric</h4>
+        <p>YouTube quota and LLM tokens are budgets, not infinite. Every service accounts for its consumption. The Intelligence Layer is the single choke-point for swapping providers.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S2 ============ -->
+  <section id="s2">
+    <span class="section-num">§ 02</span>
+    <h2>High-level system diagram</h2>
+    <p class="lede">Four planes — Edge, Application, Intelligence, Data — connected by an event bus. The diagram below is the canonical mental model. Print it. Tape it to the wall.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="High level architecture diagram">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#9A968D"/>
+          </marker>
+          <marker id="arr-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#E66A3D"/>
+          </marker>
+        </defs>
+
+        <style>
+          .lane{ fill:#1A1D22; stroke:#2A2D33; stroke-width:1; }
+          .lane-label{ font-family: "JetBrains Mono", monospace; font-size:10px; letter-spacing:1.5px; fill:#9A968D; text-transform:uppercase;}
+          .svc{ fill:#14161A; stroke:#3A3E45; stroke-width:1.2; rx:4; }
+          .svc-accent{ fill:#14161A; stroke:#E66A3D; stroke-width:1.5; rx:4; }
+          .svc-green{ fill:#14161A; stroke:#6FAE8E; stroke-width:1.5; rx:4; }
+          .svc-amber{ fill:#14161A; stroke:#D9B25A; stroke-width:1.5; rx:4; }
+          .svc-blue{ fill:#14161A; stroke:#8B9DDB; stroke-width:1.5; rx:4; }
+          .svc-title{ font-family:"DM Sans", sans-serif; font-size:13px; font-weight:600; fill:#ECE7DD; }
+          .svc-sub{ font-family:"JetBrains Mono", monospace; font-size:9.5px; fill:#9A968D; letter-spacing:0.5px;}
+          .flow{ stroke:#9A968D; stroke-width:1.2; fill:none; }
+          .flow-accent{ stroke:#E66A3D; stroke-width:1.6; fill:none; stroke-dasharray:4 3;}
+          .ext{ fill:#0E0F12; stroke:#5C5A55; stroke-width:1; stroke-dasharray:3 2; rx:4;}
+        </style>
+
+        <!-- EDGE LANE -->
+        <rect class="lane" x="20" y="20" width="960" height="100"/>
+        <text class="lane-label" x="34" y="42">EDGE · USER PLANE</text>
+
+        <rect class="svc-accent" x="60" y="56" width="140" height="48"/>
+        <text class="svc-title" x="130" y="78" text-anchor="middle">Angular SPA</text>
+        <text class="svc-sub" x="130" y="93" text-anchor="middle">creators.creatorcore.app</text>
+
+        <rect class="svc" x="220" y="56" width="120" height="48"/>
+        <text class="svc-title" x="280" y="78" text-anchor="middle">Mobile Web</text>
+        <text class="svc-sub" x="280" y="93" text-anchor="middle">PWA shell</text>
+
+        <rect class="svc" x="360" y="56" width="120" height="48"/>
+        <text class="svc-title" x="420" y="78" text-anchor="middle">Admin Console</text>
+        <text class="svc-sub" x="420" y="93" text-anchor="middle">internal-only</text>
+
+        <rect class="ext" x="780" y="56" width="170" height="48"/>
+        <text class="svc-title" x="865" y="78" text-anchor="middle" style="fill:#9A968D">Cloudflare CDN + WAF</text>
+        <text class="svc-sub" x="865" y="93" text-anchor="middle">edge protection</text>
+
+        <!-- APPLICATION LANE -->
+        <rect class="lane" x="20" y="140" width="960" height="160"/>
+        <text class="lane-label" x="34" y="162">APPLICATION PLANE · FASTAPI</text>
+
+        <rect class="svc-accent" x="60" y="180" width="160" height="48"/>
+        <text class="svc-title" x="140" y="202" text-anchor="middle">API Gateway</text>
+        <text class="svc-sub" x="140" y="217" text-anchor="middle">auth · rate-limit · routing</text>
+
+        <rect class="svc" x="240" y="180" width="140" height="48"/>
+        <text class="svc-title" x="310" y="202" text-anchor="middle">Auth Service</text>
+        <text class="svc-sub" x="310" y="217" text-anchor="middle">JWT · OAuth flows</text>
+
+        <rect class="svc" x="400" y="180" width="140" height="48"/>
+        <text class="svc-title" x="470" y="202" text-anchor="middle">Channel Service</text>
+        <text class="svc-sub" x="470" y="217" text-anchor="middle">connections · perms</text>
+
+        <rect class="svc" x="560" y="180" width="140" height="48"/>
+        <text class="svc-title" x="630" y="202" text-anchor="middle">Dashboard API</text>
+        <text class="svc-sub" x="630" y="217" text-anchor="middle">reads · aggregations</text>
+
+        <rect class="svc" x="720" y="180" width="140" height="48"/>
+        <text class="svc-title" x="790" y="202" text-anchor="middle">Reply Service</text>
+        <text class="svc-sub" x="790" y="217" text-anchor="middle">draft · approve · post</text>
+
+        <rect class="svc-amber" x="60" y="240" width="160" height="48"/>
+        <text class="svc-title" x="140" y="262" text-anchor="middle">Ingestion Worker</text>
+        <text class="svc-sub" x="140" y="277" text-anchor="middle">poller · backfill</text>
+
+        <rect class="svc-amber" x="240" y="240" width="160" height="48"/>
+        <text class="svc-title" x="320" y="262" text-anchor="middle">Alert Engine</text>
+        <text class="svc-sub" x="320" y="277" text-anchor="middle">toxicity · thresholds</text>
+
+        <rect class="svc-amber" x="420" y="240" width="160" height="48"/>
+        <text class="svc-title" x="500" y="262" text-anchor="middle">Vibe Summary Job</text>
+        <text class="svc-sub" x="500" y="277" text-anchor="middle">weekly cron · LLM</text>
+
+        <rect class="svc-amber" x="600" y="240" width="160" height="48"/>
+        <text class="svc-title" x="680" y="262" text-anchor="middle">Health Score Job</text>
+        <text class="svc-sub" x="680" y="277" text-anchor="middle">per-video 0-100</text>
+
+        <rect class="svc-amber" x="780" y="240" width="160" height="48"/>
+        <text class="svc-title" x="860" y="262" text-anchor="middle">Billing Worker</text>
+        <text class="svc-sub" x="860" y="277" text-anchor="middle">webhooks · invoices</text>
+
+        <!-- BUS -->
+        <rect x="60" y="320" width="880" height="34" fill="#0E0F12" stroke="#E66A3D" stroke-width="1.4" rx="3"/>
+        <text class="svc-title" x="500" y="341" text-anchor="middle" style="fill:#E66A3D">Event Bus · Pub/Sub · topics: comment.ingested, comment.classified, alert.fired, reply.posted</text>
+
+        <!-- INTELLIGENCE LANE -->
+        <rect class="lane" x="20" y="374" width="960" height="120"/>
+        <text class="lane-label" x="34" y="396">INTELLIGENCE PLANE · MODEL ROUTER</text>
+
+        <rect class="svc-green" x="60" y="412" width="180" height="60"/>
+        <text class="svc-title" x="150" y="434" text-anchor="middle">Sentiment Classifier</text>
+        <text class="svc-sub" x="150" y="450" text-anchor="middle">fine-tuned transformer</text>
+        <text class="svc-sub" x="150" y="463" text-anchor="middle">EN · HI · Hinglish</text>
+
+        <rect class="svc-green" x="260" y="412" width="180" height="60"/>
+        <text class="svc-title" x="350" y="434" text-anchor="middle">Toxicity Scorer</text>
+        <text class="svc-sub" x="350" y="450" text-anchor="middle">Perspective API +</text>
+        <text class="svc-sub" x="350" y="463" text-anchor="middle">internal model</text>
+
+        <rect class="svc-green" x="460" y="412" width="180" height="60"/>
+        <text class="svc-title" x="550" y="434" text-anchor="middle">LLM Gateway</text>
+        <text class="svc-sub" x="550" y="450" text-anchor="middle">Claude · GPT · Gemini</text>
+        <text class="svc-sub" x="550" y="463" text-anchor="middle">summary · drafts</text>
+
+        <rect class="svc-green" x="660" y="412" width="180" height="60"/>
+        <text class="svc-title" x="750" y="434" text-anchor="middle">Persona Engine</text>
+        <text class="svc-sub" x="750" y="450" text-anchor="middle">few-shot from</text>
+        <text class="svc-sub" x="750" y="463" text-anchor="middle">approved replies</text>
+
+        <!-- DATA LANE -->
+        <rect class="lane" x="20" y="514" width="960" height="120"/>
+        <text class="lane-label" x="34" y="536">DATA PLANE</text>
+
+        <rect class="svc-blue" x="60" y="552" width="160" height="60"/>
+        <text class="svc-title" x="140" y="574" text-anchor="middle">PostgreSQL</text>
+        <text class="svc-sub" x="140" y="590" text-anchor="middle">primary store</text>
+        <text class="svc-sub" x="140" y="603" text-anchor="middle">multi-tenant</text>
+
+        <rect class="svc-blue" x="240" y="552" width="160" height="60"/>
+        <text class="svc-title" x="320" y="574" text-anchor="middle">Redis</text>
+        <text class="svc-sub" x="320" y="590" text-anchor="middle">cache · sessions</text>
+        <text class="svc-sub" x="320" y="603" text-anchor="middle">rate limits</text>
+
+        <rect class="svc-blue" x="420" y="552" width="160" height="60"/>
+        <text class="svc-title" x="500" y="574" text-anchor="middle">Object Store</text>
+        <text class="svc-sub" x="500" y="590" text-anchor="middle">GCS</text>
+        <text class="svc-sub" x="500" y="603" text-anchor="middle">exports · backups</text>
+
+        <rect class="svc-blue" x="600" y="552" width="160" height="60"/>
+        <text class="svc-title" x="680" y="574" text-anchor="middle">Analytics Warehouse</text>
+        <text class="svc-sub" x="680" y="590" text-anchor="middle">BigQuery</text>
+        <text class="svc-sub" x="680" y="603" text-anchor="middle">cold path</text>
+
+        <rect class="svc-blue" x="780" y="552" width="160" height="60"/>
+        <text class="svc-title" x="860" y="574" text-anchor="middle">Vector Store</text>
+        <text class="svc-sub" x="860" y="590" text-anchor="middle">pgvector</text>
+        <text class="svc-sub" x="860" y="603" text-anchor="middle">persona / RAG</text>
+
+        <!-- EXTERNALS row -->
+        <rect class="ext" x="60" y="654" width="180" height="44"/>
+        <text class="svc-title" x="150" y="673" text-anchor="middle" style="fill:#9A968D">YouTube Data API v3</text>
+        <text class="svc-sub" x="150" y="688" text-anchor="middle">read · post (with consent)</text>
+
+        <rect class="ext" x="260" y="654" width="160" height="44"/>
+        <text class="svc-title" x="340" y="673" text-anchor="middle" style="fill:#9A968D">Razorpay / Stripe</text>
+        <text class="svc-sub" x="340" y="688" text-anchor="middle">subscriptions</text>
+
+        <rect class="ext" x="440" y="654" width="160" height="44"/>
+        <text class="svc-title" x="520" y="673" text-anchor="middle" style="fill:#9A968D">Resend / SES</text>
+        <text class="svc-sub" x="520" y="688" text-anchor="middle">transactional email</text>
+
+        <rect class="ext" x="620" y="654" width="160" height="44"/>
+        <text class="svc-title" x="700" y="673" text-anchor="middle" style="fill:#9A968D">KMS</text>
+        <text class="svc-sub" x="700" y="688" text-anchor="middle">token encryption</text>
+
+        <rect class="ext" x="800" y="654" width="160" height="44"/>
+        <text class="svc-title" x="880" y="673" text-anchor="middle" style="fill:#9A968D">OpenTelemetry</text>
+        <text class="svc-sub" x="880" y="688" text-anchor="middle">traces · logs · metrics</text>
+
+        <!-- Selected flow lines -->
+        <path class="flow" d="M130 104 L 130 180" marker-end="url(#arr)"/>
+        <path class="flow" d="M140 228 L 140 240" marker-end="url(#arr)"/>
+        <path class="flow-accent" d="M140 288 L 140 320" marker-end="url(#arr-accent)"/>
+        <path class="flow-accent" d="M320 288 L 320 320" marker-end="url(#arr-accent)"/>
+        <path class="flow-accent" d="M500 288 L 500 320" marker-end="url(#arr-accent)"/>
+        <path class="flow-accent" d="M860 288 L 860 320" marker-end="url(#arr-accent)"/>
+        <path class="flow" d="M150 354 L 150 412" marker-end="url(#arr)"/>
+        <path class="flow" d="M350 354 L 350 412" marker-end="url(#arr)"/>
+        <path class="flow" d="M550 354 L 550 412" marker-end="url(#arr)"/>
+        <path class="flow" d="M750 354 L 750 412" marker-end="url(#arr)"/>
+        <path class="flow" d="M150 472 L 150 552" marker-end="url(#arr)"/>
+        <path class="flow" d="M350 472 L 350 552" marker-end="url(#arr)"/>
+        <path class="flow" d="M550 472 L 550 552" marker-end="url(#arr)"/>
+        <path class="flow" d="M750 472 L 750 552" marker-end="url(#arr)"/>
+        <path class="flow" d="M140 612 L 140 654" marker-end="url(#arr)"/>
+        <path class="flow" d="M860 228 L 860 240" marker-end="url(#arr)"/>
+      </svg>
+      <div class="caption"><span class="fig">FIG 01</span>Four-plane architecture · all cross-service work flows over the event bus</div>
+    </div>
+  </section>
+
+  <!-- ============ S3 ============ -->
+  <section id="s3">
+    <span class="section-num">§ 03</span>
+    <h2>Service catalogue</h2>
+    <p class="lede">Each service has a single owner team, a single database boundary (or none), and one reason to change.</p>
+
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:170px">Service</th><th style="width:100px">Type</th><th>Responsibility</th><th style="width:100px">Owns Data?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">api-gateway</td><td>Sync</td><td>TLS termination, JWT validation, rate-limit, request routing to downstream services. Single public ingress.</td><td>No</td></tr>
+        <tr><td class="first-cell">auth-svc</td><td>Sync</td><td>Email + password, Google Sign-In, JWT issue/refresh, session management.</td><td>users · sessions</td></tr>
+        <tr><td class="first-cell">channel-svc</td><td>Sync</td><td>YouTube OAuth flow, channel-connection state, scope management, revocation.</td><td>channels · oauth_tokens</td></tr>
+        <tr><td class="first-cell">ingestion-worker</td><td>Async</td><td>Polls YouTube API per channel, deduplicates comments, emits <span class="mono">comment.ingested</span> events.</td><td>raw_comments</td></tr>
+        <tr><td class="first-cell">classifier-svc</td><td>Async</td><td>Consumes <span class="mono">comment.ingested</span>, runs sentiment + toxicity + language detection, emits <span class="mono">comment.classified</span>.</td><td>classifications</td></tr>
+        <tr><td class="first-cell">dashboard-api</td><td>Sync</td><td>Read-only aggregations, time-series queries, paginated comment lists. Heavy use of Redis cache.</td><td>No (reads)</td></tr>
+        <tr><td class="first-cell">reply-svc</td><td>Sync + async</td><td>Drafts replies via LLM gateway, queues for creator approval, posts to YouTube post-approval, audit-logs every action.</td><td>reply_drafts · audit</td></tr>
+        <tr><td class="first-cell">alert-engine</td><td>Async</td><td>Sliding-window toxicity detection, alert fan-out (in-app, email).</td><td>alerts</td></tr>
+        <tr><td class="first-cell">vibe-summary-job</td><td>Async (cron)</td><td>Weekly per-channel job. Aggregates 7 days of classified comments, calls LLM gateway, stores summary.</td><td>vibe_summaries</td></tr>
+        <tr><td class="first-cell">health-score-job</td><td>Async (cron)</td><td>Computes the per-video Comment Health Score (0-100). Fast read for dashboard + shareable.</td><td>health_scores</td></tr>
+        <tr><td class="first-cell">billing-worker</td><td>Async</td><td>Razorpay / Stripe webhooks, subscription state transitions, dunning.</td><td>subscriptions</td></tr>
+        <tr><td class="first-cell">llm-gateway</td><td>Sync</td><td>Provider-agnostic abstraction over Claude / GPT / Gemini. Caches, rate-limits, fails over, accounts costs.</td><td>llm_calls (audit)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ S4 ============ -->
+  <section id="s4">
+    <span class="section-num">§ 04</span>
+    <h2>Data flow: comment lifecycle</h2>
+    <p class="lede">From "creator hits publish" to "alert lands in their pocket" — what every comment does in our system.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comment lifecycle sequence">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#9A968D"/>
+          </marker>
+        </defs>
+        <style>
+          .lifeline{ stroke:#3A3E45; stroke-width:1; stroke-dasharray:3 4; }
+          .actor{ font-family:"DM Sans"; font-size:12px; font-weight:600; fill:#ECE7DD; }
+          .actor-sub{ font-family:"JetBrains Mono", monospace; font-size:9px; fill:#9A968D; letter-spacing:0.5px;}
+          .actor-box{ fill:#1A1D22; stroke:#2A2D33; rx:3;}
+          .msg-line{ stroke:#9A968D; stroke-width:1.2; }
+          .msg-line-warn{ stroke:#E66A3D; stroke-width:1.4; }
+          .msg-text{ font-family:"JetBrains Mono", monospace; font-size:10px; fill:#ECE7DD; letter-spacing:0.3px;}
+          .msg-text-accent{ font-family:"JetBrains Mono", monospace; font-size:10px; fill:#E66A3D; letter-spacing:0.3px;}
+          .step{ font-family:"JetBrains Mono", monospace; font-size:9.5px; fill:#D9B25A; letter-spacing:0.5px;}
+        </style>
+
+        <!-- Actor headers -->
+        <rect class="actor-box" x="20" y="20" width="120" height="44"/>
+        <text class="actor" x="80" y="40" text-anchor="middle">YouTube</text>
+        <text class="actor-sub" x="80" y="55" text-anchor="middle">external</text>
+
+        <rect class="actor-box" x="170" y="20" width="120" height="44"/>
+        <text class="actor" x="230" y="40" text-anchor="middle">Ingestion</text>
+        <text class="actor-sub" x="230" y="55" text-anchor="middle">worker</text>
+
+        <rect class="actor-box" x="320" y="20" width="120" height="44"/>
+        <text class="actor" x="380" y="40" text-anchor="middle">Event Bus</text>
+        <text class="actor-sub" x="380" y="55" text-anchor="middle">pub/sub</text>
+
+        <rect class="actor-box" x="470" y="20" width="120" height="44"/>
+        <text class="actor" x="530" y="40" text-anchor="middle">Classifier</text>
+        <text class="actor-sub" x="530" y="55" text-anchor="middle">intelligence</text>
+
+        <rect class="actor-box" x="620" y="20" width="120" height="44"/>
+        <text class="actor" x="680" y="40" text-anchor="middle">Postgres</text>
+        <text class="actor-sub" x="680" y="55" text-anchor="middle">data plane</text>
+
+        <rect class="actor-box" x="770" y="20" width="120" height="44"/>
+        <text class="actor" x="830" y="40" text-anchor="middle">Alert Engine</text>
+        <text class="actor-sub" x="830" y="55" text-anchor="middle">async</text>
+
+        <rect class="actor-box" x="900" y="20" width="80" height="44"/>
+        <text class="actor" x="940" y="40" text-anchor="middle">Creator</text>
+        <text class="actor-sub" x="940" y="55" text-anchor="middle">end user</text>
+
+        <!-- Lifelines -->
+        <line class="lifeline" x1="80"  y1="64" x2="80"  y2="460"/>
+        <line class="lifeline" x1="230" y1="64" x2="230" y2="460"/>
+        <line class="lifeline" x1="380" y1="64" x2="380" y2="460"/>
+        <line class="lifeline" x1="530" y1="64" x2="530" y2="460"/>
+        <line class="lifeline" x1="680" y1="64" x2="680" y2="460"/>
+        <line class="lifeline" x1="830" y1="64" x2="830" y2="460"/>
+        <line class="lifeline" x1="940" y1="64" x2="940" y2="460"/>
+
+        <!-- Step 1 -->
+        <text class="step" x="20" y="100">[01]</text>
+        <line class="msg-line" x1="230" y1="110" x2="80" y2="110" marker-end="url(#arr2)"/>
+        <text class="msg-text" x="155" y="104" text-anchor="middle">commentThreads.list (every 15 min)</text>
+
+        <!-- Step 2 -->
+        <text class="step" x="20" y="150">[02]</text>
+        <line class="msg-line" x1="80" y1="160" x2="230" y2="160" marker-end="url(#arr2)"/>
+        <text class="msg-text" x="155" y="154" text-anchor="middle">100 new comments</text>
+
+        <!-- Step 3 dedupe -->
+        <text class="step" x="20" y="200">[03]</text>
+        <rect x="190" y="190" width="80" height="20" fill="#1A1D22" stroke="#3A3E45" rx="2"/>
+        <text class="msg-text" x="230" y="204" text-anchor="middle">dedupe</text>
+
+        <!-- Step 4 emit -->
+        <text class="step" x="20" y="240">[04]</text>
+        <line class="msg-line-warn" x1="230" y1="250" x2="380" y2="250" marker-end="url(#arr2)"/>
+        <text class="msg-text-accent" x="305" y="244" text-anchor="middle">comment.ingested ×100</text>
+
+        <!-- Step 5 fan-out -->
+        <text class="step" x="20" y="285">[05]</text>
+        <line class="msg-line" x1="380" y1="295" x2="530" y2="295" marker-end="url(#arr2)"/>
+        <text class="msg-text" x="455" y="289" text-anchor="middle">subscribe + classify</text>
+
+        <!-- Step 6 -->
+        <text class="step" x="20" y="325">[06]</text>
+        <line class="msg-line" x1="530" y1="335" x2="680" y2="335" marker-end="url(#arr2)"/>
+        <text class="msg-text" x="605" y="329" text-anchor="middle">INSERT classifications</text>
+
+        <!-- Step 7 -->
+        <text class="step" x="20" y="370">[07]</text>
+        <line class="msg-line-warn" x1="530" y1="380" x2="380" y2="380" marker-end="url(#arr2)"/>
+        <text class="msg-text-accent" x="455" y="374" text-anchor="middle">comment.classified</text>
+        <line class="msg-line-warn" x1="380" y1="380" x2="830" y2="380"/>
+
+        <!-- Step 8 alert -->
+        <text class="step" x="20" y="420">[08]</text>
+        <rect x="790" y="410" width="80" height="20" fill="#1A1D22" stroke="#E66A3D" rx="2"/>
+        <text class="msg-text" x="830" y="424" text-anchor="middle">window check</text>
+
+        <!-- Step 9 push -->
+        <text class="step" x="20" y="455">[09]</text>
+        <line class="msg-line-warn" x1="830" y1="455" x2="940" y2="455" marker-end="url(#arr2)"/>
+        <text class="msg-text-accent" x="885" y="449" text-anchor="middle">push + email</text>
+      </svg>
+      <div class="caption"><span class="fig">FIG 02</span>Comment lifecycle · 9 steps from publish to creator notification</div>
+    </div>
+
+    <h4>The why behind each step</h4>
+    <ul>
+      <li><strong>Polling, not push.</strong> YouTube's PubSubHubbub fires only for new <em>videos</em>, not comments. We poll. The 15-minute interval is a balance between alert latency and quota burn.</li>
+      <li><strong>Dedupe before bus.</strong> Cheaper than dedup downstream and avoids fan-out amplification.</li>
+      <li><strong>Two events, not one.</strong> <span class="mono">comment.ingested</span> and <span class="mono">comment.classified</span> are separate so dashboards can render raw comments instantly while classification catches up.</li>
+      <li><strong>Sliding-window toxicity.</strong> Single toxic comment ≠ alert. Rolling 1-hour window weighted by comment velocity = alert. Reduces noise dramatically.</li>
+    </ul>
+  </section>
+
+  <!-- ============ S5 ============ -->
+  <section id="s5">
+    <span class="section-num">§ 05</span>
+    <h2>OAuth &amp; identity</h2>
+    <p class="lede">The single highest-stakes flow in the system. Get this wrong and we lose creator trust, YouTube approval, or both.</p>
+
+    <h3>Scope minimisation</h3>
+    <p>We request only what each capability needs, and we request it lazily — i.e. <span class="mono">youtube.force-ssl</span> is only requested when a creator first enables reply-posting, not at signup.</p>
+
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:240px">Scope</th><th style="width:140px">When requested</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">openid · email · profile</td><td>Sign-in</td><td>Identify the user account.</td></tr>
+        <tr><td class="first-cell">youtube.readonly</td><td>Channel connect</td><td>List videos, fetch comment threads, fetch channel stats.</td></tr>
+        <tr><td class="first-cell">youtube.force-ssl</td><td>Lazy — first reply</td><td>Post replies, hide spam, moderate. Only after creator enables Action Center.</td></tr>
+        <tr><td class="first-cell">yt-analytics.readonly</td><td>Lazy — Brand Report</td><td>Audience health export, sponsor reports.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Token storage</h3>
+    <ul>
+      <li>Access tokens: <strong>never persisted</strong>. Held in memory or short-lived Redis (TTL = expiry).</li>
+      <li>Refresh tokens: encrypted with envelope encryption — KMS-managed root key wraps a per-tenant data key, which wraps the token. Stored in <span class="mono">oauth_tokens</span>.</li>
+      <li>On revoke or account delete: tokens revoked at Google AND the row hard-deleted within 30 days.</li>
+    </ul>
+
+    <div class="callout danger">
+      <span class="tag">Audit-critical</span>
+      <p>If a YouTube auditor asks "show me how a deleted user's tokens are guaranteed gone," your answer must be: a runnable script that queries every storage layer (Postgres, Redis, backups, logs) and proves zero residue. Build it on day one. Run it monthly.</p>
+    </div>
+  </section>
+
+  <!-- ============ S6 ============ -->
+  <section id="s6">
+    <span class="section-num">§ 06</span>
+    <h2>The intelligence layer</h2>
+    <p class="lede">Your competitive moat lives here. Treat it as a product, not a folder.</p>
+
+    <h3>Why a router, not direct calls</h3>
+    <p>Every model call (sentiment, toxicity, summary, draft, persona) goes through the <strong>LLM Gateway</strong> — a thin internal service that:</p>
+    <ul>
+      <li>Picks the right backend (self-hosted classifier vs. Perspective API vs. Claude vs. GPT) based on cost, latency, and task.</li>
+      <li>Caches identical inputs (a "First!" comment classified once, served forever).</li>
+      <li>Tracks per-tenant token spend and enforces per-plan caps.</li>
+      <li>Logs every call to <span class="mono">llm_calls</span> with model version, prompt template ID, cost, latency — feeds the Trust Ledger.</li>
+      <li>Supports a "shadow mode" where we run two models in parallel to compare quality before switching.</li>
+    </ul>
+
+    <h3>Model selection by task</h3>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:180px">Task</th><th style="width:200px">Backend</th><th>Reasoning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">Sentiment (bulk)</td><td>Self-hosted, fine-tuned</td><td>1000s of comments / minute. API costs would kill margin.</td></tr>
+        <tr><td class="first-cell">Toxicity</td><td>Perspective API + internal</td><td>Perspective is free, well-calibrated for English. Internal model fills Hinglish gap.</td></tr>
+        <tr><td class="first-cell">Vibe Summary</td><td>Claude / GPT (premium)</td><td>Once per week per creator. Quality matters more than cost. Customer-visible output.</td></tr>
+        <tr><td class="first-cell">Reply drafts</td><td>Cheap LLM (Haiku-class)</td><td>High volume, short outputs. Cost-sensitive.</td></tr>
+        <tr><td class="first-cell">Persona matching</td><td>Embeddings + few-shot</td><td>Retrieve N nearest approved replies via pgvector, prepend as few-shot.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Evaluation harness (non-optional)</h3>
+    <p>An internal CLI tool, <span class="mono">creatorcore-eval</span>, runs the entire labelled comment set against any candidate model and outputs F1 per language, confusion matrix, and cost-per-1k-comments. <strong>No model goes to production without passing.</strong> This is your scientific moat.</p>
+  </section>
+
+  <!-- ============ S7 ============ -->
+  <section id="s7">
+    <span class="section-num">§ 07</span>
+    <h2>Data stores &amp; schema</h2>
+
+    <h3>Storage choices</h3>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:160px">Store</th><th style="width:140px">Tech</th><th>What lives there</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">Primary OLTP</td><td>PostgreSQL 16</td><td>All transactional, relational data: users, channels, videos, comments, classifications, drafts, alerts, audits.</td></tr>
+        <tr><td class="first-cell">Cache</td><td>Redis 7</td><td>Session state, rate-limit counters, dashboard query cache, YouTube API response cache (per-key TTL).</td></tr>
+        <tr><td class="first-cell">Vector</td><td>pgvector (in same Postgres)</td><td>Persona embeddings, RAG over historical comments. Co-located with OLTP — no extra infra.</td></tr>
+        <tr><td class="first-cell">Object</td><td>Google Cloud Storage</td><td>PDF brand reports, CSV exports, daily DB backups.</td></tr>
+        <tr><td class="first-cell">Warehouse</td><td>BigQuery</td><td>Cold analytics, internal product metrics, eval datasets. Daily ETL from Postgres.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Multi-tenancy strategy</h3>
+    <p>Single shared Postgres database, every tenant-scoped table carries a <span class="mono">tenant_id</span> with row-level security. We get isolation guarantees without per-tenant DBs to operate. We revisit at 1000+ tenants or when a single creator exceeds 5% of total comment volume.</p>
+
+    <h3>Core schema (excerpt)</h3>
+<pre><span class="c">-- minimal, illustrative; full DDL lives in /db/migrations</span>
+<span class="k">CREATE TABLE</span> <span class="n">channels</span> (
+  <span class="y">id</span>             uuid <span class="k">PRIMARY KEY</span>,
+  <span class="y">tenant_id</span>      uuid <span class="k">NOT NULL</span>,
+  <span class="y">youtube_id</span>     text <span class="k">UNIQUE NOT NULL</span>,
+  <span class="y">title</span>          text,
+  <span class="y">connected_at</span>   timestamptz,
+  <span class="y">scopes</span>         text[],
+  <span class="y">status</span>         text <span class="k">CHECK</span> (status <span class="k">IN</span> (<span class="s">'active'</span>,<span class="s">'paused'</span>,<span class="s">'revoked'</span>))
+);
+
+<span class="k">CREATE TABLE</span> <span class="n">comments</span> (
+  <span class="y">id</span>             uuid <span class="k">PRIMARY KEY</span>,
+  <span class="y">tenant_id</span>      uuid <span class="k">NOT NULL</span>,
+  <span class="y">channel_id</span>     uuid <span class="k">REFERENCES</span> channels(id),
+  <span class="y">video_id</span>       text <span class="k">NOT NULL</span>,
+  <span class="y">youtube_id</span>     text <span class="k">UNIQUE NOT NULL</span>,
+  <span class="y">parent_id</span>      text,
+  <span class="y">author_name</span>    text,
+  <span class="y">author_yt_id</span>   text,
+  <span class="y">text</span>           text <span class="k">NOT NULL</span>,
+  <span class="y">published_at</span>   timestamptz,
+  <span class="y">like_count</span>     int <span class="k">DEFAULT</span> 0,
+  <span class="y">ingested_at</span>    timestamptz <span class="k">DEFAULT</span> now()
+);
+<span class="k">CREATE INDEX</span> <span class="k">ON</span> <span class="n">comments</span> (channel_id, published_at <span class="k">DESC</span>);
+
+<span class="k">CREATE TABLE</span> <span class="n">classifications</span> (
+  <span class="y">comment_id</span>     uuid <span class="k">PRIMARY KEY REFERENCES</span> comments(id),
+  <span class="y">sentiment</span>      text <span class="k">CHECK</span> (sentiment <span class="k">IN</span> (<span class="s">'positive'</span>,<span class="s">'negative'</span>,<span class="s">'neutral'</span>,<span class="s">'inquiry'</span>)),
+  <span class="y">toxicity</span>       numeric(4,3),
+  <span class="y">language</span>       text,
+  <span class="y">spam</span>           boolean <span class="k">DEFAULT false</span>,
+  <span class="y">model_version</span>  text <span class="k">NOT NULL</span>,
+  <span class="y">override_by</span>    uuid <span class="k">REFERENCES</span> users(id),
+  <span class="y">classified_at</span>  timestamptz <span class="k">DEFAULT</span> now()
+);
+
+<span class="k">CREATE TABLE</span> <span class="n">reply_drafts</span> (
+  <span class="y">id</span>             uuid <span class="k">PRIMARY KEY</span>,
+  <span class="y">comment_id</span>     uuid <span class="k">REFERENCES</span> comments(id),
+  <span class="y">draft_text</span>     text <span class="k">NOT NULL</span>,
+  <span class="y">persona_ver</span>    text,
+  <span class="y">status</span>         text <span class="k">CHECK</span> (status <span class="k">IN</span> (<span class="s">'pending'</span>,<span class="s">'approved'</span>,<span class="s">'posted'</span>,<span class="s">'discarded'</span>)),
+  <span class="y">approved_by</span>    uuid <span class="k">REFERENCES</span> users(id),
+  <span class="y">approved_at</span>    timestamptz,
+  <span class="y">posted_at</span>      timestamptz,
+  <span class="y">youtube_reply_id</span> text
+);
+
+<span class="k">CREATE TABLE</span> <span class="n">audit_log</span> (
+  <span class="y">id</span>             bigserial <span class="k">PRIMARY KEY</span>,
+  <span class="y">tenant_id</span>      uuid,
+  <span class="y">actor_id</span>       uuid,
+  <span class="y">action</span>         text <span class="k">NOT NULL</span>,
+  <span class="y">target_type</span>    text,
+  <span class="y">target_id</span>      text,
+  <span class="y">metadata</span>       jsonb,
+  <span class="y">ip</span>             inet,
+  <span class="y">at</span>             timestamptz <span class="k">DEFAULT</span> now()
+);
+<span class="k">CREATE INDEX</span> <span class="k">ON</span> <span class="n">audit_log</span> (tenant_id, at <span class="k">DESC</span>);
+</pre>
+  </section>
+
+  <!-- ============ S8 ============ -->
+  <section id="s8">
+    <span class="section-num">§ 08</span>
+    <h2>API contract</h2>
+    <p class="lede">REST + JSON over HTTPS. Versioned at the URL. WebSocket only for live alert push.</p>
+
+    <h4>Public endpoints (excerpt)</h4>
+<pre><span class="c"># Channel connection</span>
+<span class="k">POST</span>   /v1/channels/connect          <span class="c"># initiates OAuth, returns auth URL</span>
+<span class="k">GET</span>    /v1/channels                  <span class="c"># list connected channels</span>
+<span class="k">DELETE</span> /v1/channels/{id}             <span class="c"># revoke + purge</span>
+
+<span class="c"># Dashboard reads (cached aggressively)</span>
+<span class="k">GET</span>    /v1/channels/{id}/stats?range=7d
+<span class="k">GET</span>    /v1/channels/{id}/sentiment-timeseries?range=30d
+<span class="k">GET</span>    /v1/channels/{id}/health-score
+<span class="k">GET</span>    /v1/videos/{id}/comments?sentiment=negative&amp;page=1
+
+<span class="c"># Reply workflow</span>
+<span class="k">GET</span>    /v1/replies/pending           <span class="c"># queue of drafted replies</span>
+<span class="k">POST</span>   /v1/replies/{id}/approve      <span class="c"># one-tap publish</span>
+<span class="k">POST</span>   /v1/replies/{id}/discard
+<span class="k">PATCH</span>  /v1/replies/{id}              <span class="c"># edit before approve</span>
+
+<span class="c"># Insights</span>
+<span class="k">GET</span>    /v1/channels/{id}/vibe-summary?week=2026-W17
+<span class="k">GET</span>    /v1/channels/{id}/alerts?status=open
+
+<span class="c"># Live updates</span>
+<span class="k">WSS</span>    /v1/stream/alerts             <span class="c"># server pushes alert events</span>
+</pre>
+
+    <h4>Conventions that save future arguments</h4>
+    <ul>
+      <li>All list endpoints paginate via <span class="mono">cursor</span> (not offset). Stable under inserts.</li>
+      <li>All timestamps are RFC 3339 UTC. Always.</li>
+      <li>All errors follow <a href="https://www.rfc-editor.org/rfc/rfc9457" style="color:var(--accent-2)">RFC 9457 Problem Details</a>. No bespoke error formats.</li>
+      <li>Idempotency keys on every <span class="mono">POST</span> that triggers external side-effects (reply post, billing).</li>
+    </ul>
+  </section>
+
+  <!-- ============ S9 ============ -->
+  <section id="s9">
+    <span class="section-num">§ 09</span>
+    <h2>Security &amp; compliance</h2>
+
+    <h3>Threat model (top 5)</h3>
+    <ol>
+      <li><strong>OAuth token theft</strong> → KMS envelope encryption, short-lived access tokens never persisted, monthly key rotation.</li>
+      <li><strong>Tenant data leakage via SQL bug</strong> → Row-level security policies enforced in Postgres + tenant-id assertion in every API handler.</li>
+      <li><strong>Prompt injection in comments</strong> → Comments are <em>data</em> in LLM prompts, never instructions. Strict separation, no eval-style execution. Output filtering on Vibe Summaries.</li>
+      <li><strong>Stolen JWT</strong> → 15-minute access TTL, refresh rotation, anomaly detection on geo + device.</li>
+      <li><strong>Insider abuse</strong> → All admin reads against tenant data are audit-logged with justification; randomised access reviews quarterly.</li>
+    </ol>
+
+    <h3>Compliance map</h3>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:200px">Regime</th><th>Posture</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">YouTube API ToS</td><td>Draft-and-approve replies only · explicit creator consent · no automated mass-action · audit trail proves human approval per reply.</td></tr>
+        <tr><td class="first-cell">DPDP Act 2023 (India)</td><td>Consent capture at signup · purpose limitation · data principal rights endpoints · DPO designated.</td></tr>
+        <tr><td class="first-cell">GDPR (EU users)</td><td>Same as DPDP plus data-export endpoint · 30-day deletion SLA · breach notification process.</td></tr>
+        <tr><td class="first-cell">Google API User Data Policy</td><td>Annual security assessment from Phase 6 onward · clear privacy policy · scope minimisation documented.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout green">
+      <span class="tag">Mentor's lever</span>
+      <p>Pass the YouTube API Compliance Audit before you scale. It's slow (4–8 weeks) but once you have it, your story to creators changes from "trust us" to "Google verified us." That's worth more than any feature on your roadmap.</p>
+    </div>
+  </section>
+
+  <!-- ============ S10 ============ -->
+  <section id="s10">
+    <span class="section-num">§ 10</span>
+    <h2>Quota &amp; cost engineering</h2>
+    <p class="lede">Two budgets that decide whether the company survives: YouTube API quota units, and LLM tokens.</p>
+
+    <h3>YouTube quota strategy</h3>
+    <ul>
+      <li>Default daily quota is 10,000 units. <span class="mono">commentThreads.list</span> costs 1 unit per call (typically 100 comments returned).</li>
+      <li>Polling math: 1 channel × 96 polls/day × ~3 calls/poll ≈ 288 units/day. 10K quota = ~35 channels max at default.</li>
+      <li><strong>Apply for quota extension at 25 channels</strong>, not at exhaustion. Approval takes weeks.</li>
+      <li>Per-tier polling cadence: Free = 60 min, Creator = 15 min, Manager = 5 min. Plan tiers <em>are</em> quota tiers.</li>
+      <li>Aggressive Redis caching: video metadata (1 hour), channel stats (15 min), comments by ID (forever — they don't change).</li>
+    </ul>
+
+    <h3>LLM cost strategy</h3>
+    <ul>
+      <li>Per-tenant monthly token cap, enforced at the LLM Gateway. Soft warn at 80%, hard cut at 100%.</li>
+      <li>Vibe Summary uses a pre-aggregation step in our own code (cheap) to feed the LLM only top themes — not 5,000 raw comments.</li>
+      <li>Reply drafts use cached templates for the top-N most common low-intent patterns ("First!", "🔥🔥🔥") — zero LLM cost.</li>
+      <li>Per-tier model selection: Free uses templated replies only, paid tiers unlock LLM-drafted personalised replies.</li>
+    </ul>
+
+    <h3>Unit economics target</h3>
+<pre><span class="y">target_per_creator_per_month:</span>
+  <span class="y">revenue:</span>      <span class="s">$14.00</span>
+  <span class="y">youtube_quota:</span> <span class="s">"$0 (free tier with extension)"</span>
+  <span class="y">llm_cost:</span>     <span class="s">$1.50  </span><span class="c"># vibe summary + drafts</span>
+  <span class="y">infra:</span>        <span class="s">$0.80  </span><span class="c"># compute, storage, bandwidth</span>
+  <span class="y">payment_fees:</span> <span class="s">$0.70</span>
+  <span class="y">gross_margin:</span> <span class="s">$11.00 </span><span class="c"># ~78%</span>
+</pre>
+  </section>
+
+  <!-- ============ S11 ============ -->
+  <section id="s11">
+    <span class="section-num">§ 11</span>
+    <h2>Deployment topology</h2>
+
+    <h3>Choices</h3>
+    <ul>
+      <li><strong>Cloud</strong>: Google Cloud Platform, region <span class="mono">asia-south1</span> (Mumbai). Closest to early users + cheap intra-region traffic.</li>
+      <li><strong>Compute</strong>: Cloud Run for stateless services (auto-scales to zero — saves money in early days). GKE Autopilot for the classifier (GPU node pool, persistent).</li>
+      <li><strong>Database</strong>: Cloud SQL for Postgres (HA, automated backups, point-in-time recovery).</li>
+      <li><strong>Cache</strong>: Memorystore for Redis.</li>
+      <li><strong>Bus</strong>: Cloud Pub/Sub. Pull-mode subscribers, exactly-once where it matters (reply posts).</li>
+      <li><strong>Edge</strong>: Cloudflare in front of everything for WAF, DDoS, CDN. Cloud Run is origin.</li>
+    </ul>
+
+    <h3>Environments</h3>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:120px">Env</th><th style="width:160px">Purpose</th><th>Quota / Cost ceiling</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">dev</td><td>Local + per-engineer ephemeral</td><td>Mock YouTube + LLM. Zero external spend.</td></tr>
+        <tr><td class="first-cell">staging</td><td>Integration + QA</td><td>Real YouTube on a sandbox channel · LLM with $50/mo cap.</td></tr>
+        <tr><td class="first-cell">prod</td><td>Real users</td><td>Full quotas · billing alerts at 50% / 80% / 100% of monthly budget.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Release</h3>
+    <p>Trunk-based development. Every merge to <span class="mono">main</span> deploys to staging. Promotion to prod is a manual GitHub Action with required approvers — no auto-prod until we have a 30-day clean staging streak. Database migrations are forward-compatible by convention; no destructive change in the same release as code that depends on it (expand-then-contract).</p>
+  </section>
+
+  <!-- ============ S12 ============ -->
+  <section id="s12">
+    <span class="section-num">§ 12</span>
+    <h2>Observability</h2>
+
+    <h3>The three signals + one</h3>
+    <ul>
+      <li><strong>Logs</strong> — structured JSON, OpenTelemetry-shipped to Cloud Logging. Every log line carries <span class="mono">tenant_id</span>, <span class="mono">trace_id</span>, <span class="mono">service</span>.</li>
+      <li><strong>Metrics</strong> — Prometheus-format, scraped by Cloud Monitoring. RED method (Rate / Errors / Duration) per service + USE for infra.</li>
+      <li><strong>Traces</strong> — OpenTelemetry across services. A single comment's path from YouTube to alert should appear as one trace.</li>
+      <li><strong>Business events</strong> — separate event stream feeding BigQuery: <span class="mono">creator_signed_up</span>, <span class="mono">reply_approved</span>, <span class="mono">summary_rated</span>. This is your product telemetry, not your engineering telemetry.</li>
+    </ul>
+
+    <h3>SLOs (initial)</h3>
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:200px">Service</th><th style="width:200px">SLI</th><th>Target</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">api-gateway</td><td>p95 latency</td><td>&lt; 250ms</td></tr>
+        <tr><td class="first-cell">dashboard-api</td><td>availability</td><td>99.5%</td></tr>
+        <tr><td class="first-cell">ingestion-worker</td><td>poll-to-insert latency</td><td>&lt; 60s p99</td></tr>
+        <tr><td class="first-cell">classifier-svc</td><td>throughput</td><td>≥ 1000 comments/min/worker</td></tr>
+        <tr><td class="first-cell">alert-engine</td><td>alert latency</td><td>&lt; 30 min from comment publish</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ S13 ============ -->
+  <section id="s13">
+    <span class="section-num">§ 13</span>
+    <h2>Scalability plan</h2>
+    <p class="lede">A staged plan, not premature optimisation. Each tier has an explicit "exit signal" that triggers the next.</p>
+
+    <table class="arch-table">
+      <thead>
+        <tr><th style="width:130px">Tier</th><th style="width:160px">Posture</th><th>Exit signal</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="first-cell">0–100 channels</td><td>Single Postgres · Cloud Run · 1 classifier pod</td><td>p95 dashboard latency &gt; 500ms <strong>or</strong> classifier queue lag &gt; 5 min</td></tr>
+        <tr><td class="first-cell">100–1,000</td><td>Read replica for dashboard · classifier HPA up to 5 pods · Pub/Sub batching</td><td>Single Postgres write IOPS at 70% sustained</td></tr>
+        <tr><td class="first-cell">1,000–10,000</td><td>Logical sharding by tenant_id · partitioned <span class="mono">comments</span> table by month · separate analytics replica</td><td>Single-tenant viral-channel comment burst saturates classifier</td></tr>
+        <tr><td class="first-cell">10,000+</td><td>Per-shard Postgres · regional active-active · dedicated tenant pools for top 1% creators</td><td>Beyond the planning horizon of this doc</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout amber">
+      <span class="tag">Anti-pattern</span>
+      <p>Do not Kubernetes-everything in tier 0. Cloud Run is enough for ten thousand creators. Ops complexity is a tax we don't pay until growth forces us to.</p>
+    </div>
+  </section>
+
+  <!-- ============ S14 ============ -->
+  <section id="s14">
+    <span class="section-num">§ 14</span>
+    <h2>Disaster recovery</h2>
+    <ul>
+      <li><strong>RPO 15 minutes</strong> · <strong>RTO 2 hours</strong> for the MVP — published commitment.</li>
+      <li>Postgres: PITR enabled, automated daily snapshots, weekly snapshot copied to a second region.</li>
+      <li>Object store: cross-region replication for backups bucket only.</li>
+      <li>Pub/Sub: subscriptions retain undelivered messages for 7 days — safe replay window.</li>
+      <li>Quarterly <strong>game-day exercise</strong>: drop the prod replica, verify failover, restore a tenant from snapshot, time the whole thing. If you don't practise it, you don't have it.</li>
+    </ul>
+  </section>
+
+  <!-- ============ S15 ============ -->
+  <section id="s15">
+    <span class="section-num">§ 15</span>
+    <h2>Engineering playbook</h2>
+
+    <h3>Repo layout (monorepo)</h3>
+<pre>creatorcore/
+├── apps/
+│   ├── web/                    <span class="c"># Angular SPA</span>
+│   └── admin/                  <span class="c"># internal console</span>
+├── services/
+│   ├── api-gateway/
+│   ├── auth-svc/
+│   ├── channel-svc/
+│   ├── ingestion-worker/
+│   ├── classifier-svc/
+│   ├── reply-svc/
+│   ├── alert-engine/
+│   ├── vibe-summary-job/
+│   ├── health-score-job/
+│   ├── billing-worker/
+│   └── llm-gateway/
+├── packages/                   <span class="c"># shared libs</span>
+│   ├── proto/                  <span class="c"># pub/sub event schemas</span>
+│   ├── db/                     <span class="c"># sqlalchemy models, migrations</span>
+│   └── eval/                   <span class="c"># the evaluation harness</span>
+├── infra/                      <span class="c"># Terraform</span>
+└── docs/                       <span class="c"># SRS, ARCH, ADRs</span>
+</pre>
+
+    <h3>Decisions that compound</h3>
+    <ul>
+      <li><strong>One language per layer.</strong> Python for backend, TypeScript for frontend. Resist the urge to introduce Go for "performance" until measured.</li>
+      <li><strong>Architecture Decision Records (ADRs).</strong> Every significant choice gets a numbered markdown file in <span class="mono">/docs/adr/</span>. Future-you and future-hires will thank you.</li>
+      <li><strong>Feature flags from week one.</strong> A simple per-tenant flag table. Saves you twice in year one.</li>
+      <li><strong>Type the entire bus.</strong> Pub/Sub event schemas as Pydantic models (Python) compiled to TypeScript. No untyped JSON crossing service boundaries.</li>
+      <li><strong>Failure-mode tests.</strong> For each service, write one test that simulates: YouTube 403, DB connection drop, LLM timeout. The system should degrade gracefully, not crash.</li>
+    </ul>
+  </section>
+
+  <!-- ============ S16 ============ -->
+  <section id="s16">
+    <span class="section-num">§ 16</span>
+    <h2>Path to YouTube partnership</h2>
+    <p class="lede">A staged commercial plan. Architecture isn't only for engineers — it's evidence in the conversations you'll have with Google.</p>
+
+    <ol>
+      <li><strong>Now → 3 months.</strong> Ship MVP. Don't contact YouTube. Apply to Google for Startups Cloud Program for credits.</li>
+      <li><strong>3–6 months.</strong> 50 paying creators. Compile a public privacy policy, terms, and data-deletion runbook. Publish a public status page.</li>
+      <li><strong>6 months.</strong> Submit for the YouTube API Services Compliance Audit. Budget 4–8 weeks. Use this architecture document as part of the submission.</li>
+      <li><strong>8–10 months.</strong> Audit passed. Apply for quota extension citing audit verification. You are now meaningfully different from 99% of YouTube apps in the wild.</li>
+      <li><strong>10–12 months.</strong> Reach out to YouTube Partner Program / Creator Relations with: paying users, audit pass, a data-driven case study (e.g. "creators using CreatorCore reduce comment-handling time by 64% — here's the methodology"). <em>Now</em> they listen.</li>
+      <li><strong>12+ months.</strong> Inbound becomes possible. Speak at YouTube's creator summits. Partner integrations into YouTube Studio become a real conversation.</li>
+    </ol>
+
+    <div class="callout green">
+      <span class="tag">The reframe</span>
+      <p>You are not asking YouTube for a favour. You are showing them a tool that increases creator retention on their platform — a metric they care about more than almost anything. Build that case quantitatively before you book the meeting.</p>
+    </div>
+  </section>
+
+  <footer class="doc-foot">
+    <span>CreatorCore ARCH v0.1 · Draft</span>
+    <span>Confidential — Internal Use</span>
+  </footer>
+
+</div>
+</body>
+</html>
